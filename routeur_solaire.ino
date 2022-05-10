@@ -1,7 +1,7 @@
 //--------PROGRAMME POUR envoyer le surplus de production PV au chauffe eau ou autre---------------------------------------
 
 //Librairies:
-  // librairie pour mesurer l'intensité avec un tor:
+  // librairie pour mesurer l'intensité avec un tor (à tester au cas où mais ma fonction Injection à l'air de bien fonctionner):
     #include <EmonLib.h> 
   //Variateur est le nom pour le module AC dimmer qui est le variateur de puissance:
       //on peut télécharger la librairie zippée sur https://github.com/RobotDynOfficial/RBDDimmer:
@@ -26,7 +26,7 @@
   //attribution du port de commande (3) au variateur:
     dimmerLamp Variateur(PortVariateur);
   // Creation de l'instance Injection:
-    EnergyMonitor Injection;
+    EnergyMonitor emon1;
   //Attribution de l'adresse matérielle et definition du lcd 20x4 (en cas de pb, changer le port 0x27 par 0x3F):
     LiquidCrystal_I2C lcd(0x27, 20, 4);
 
@@ -36,8 +36,8 @@
       Serial.begin(9600);
     //petit message pour visuliser le démmarage:
       Serial.println(F("Initialisation du système"));               
-    // calibrage du courant sur le pin 1 (coéfficient 111.1 à changer):
-      Injection.current(1, 111.1);  
+    // calibrage du courant sur le pin 1 (coéfficient 111.1 à changer eventuellemnt pour ajuster):
+      emon1.current(1, 111.1);  
     // initialisation de l'afficheur:
       lcd.init();
     //initialisation du variateur de puissance:
@@ -54,7 +54,7 @@
       // test du calcul d'intensité avec emonlib:
         //Iemon();
       //test de d'acquisition et de calcul de Umax:
-        Umax();
+        Injection();
       //test de l'affichage sur lcd:
         //AffichageLcd();
   }  
@@ -85,7 +85,7 @@
     }
 
 //Définition de la fonction pour lire la tension sur une période (20ms)
-    void Umax(){
+    void Injection(){
       //Les valeurs lues sur A2 sont stockées dans un tableau:
     float Um;
     float Ueff;
@@ -130,12 +130,14 @@
 //Définition de la fonction etalonnage du calcul d'intensité:
     void Iemon(){
       //Calcul d'intensités:
-        float Iinjection=Injection.Irms;
-        double Ieff = Injection.calcIrms(1480);
+        float I=emon1.Irms;
+        double Ieff = emon1.calcIrms(1480);
       // affichage du test sur le PC pour bien étalonner les calculs d'intensités:
-        Serial.print(Iinjection); // intensité 
+        Serial.print("intensité instantanée");
+        Serial.print(I);
         Serial.println(" Ampères");
-        Serial.print(Ieff); // intensité moyenne
+        Serial.print("intensité moyenne");
+        Serial.print(Ieff);
         Serial.println(" Ampères");
      }
 

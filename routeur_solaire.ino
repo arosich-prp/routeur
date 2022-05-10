@@ -44,6 +44,7 @@
       Variateur.begin(NORMAL_MODE, ON);
     //lecture sur le pin A2 de la tension aux bornes de la résistance sur le tor (pince ampère métrique):
       pinMode(A2,INPUT);
+    //lecture sur le pin A1 de la tension aux bornes de la résistance sur le tor (pince ampère métrique):
   }
 
 //Boucle principale:
@@ -53,8 +54,8 @@
         //testVariateur();
       // test du calcul d'intensité avec emonlib:
         //Iemon();
-      //test de d'acquisition et de calcul de Umax:
-        Injection();
+      //test d'acquisition sur A2:
+        Lecture();
       //test de l'affichage sur lcd:
         //AffichageLcd();
   }  
@@ -85,7 +86,7 @@
     }
 
 //Définition de la fonction pour lire la tension sur une période (20ms)
-    void Injection(){
+    void Lecture(){
       //Les valeurs lues sur A2 sont stockées dans un tableau:
     float Um;
     float Ueff;
@@ -93,10 +94,11 @@
     float P;
     int U[500];
       int i;
-      Serial.println("Test lancé\n");
+      Serial.println("Recherche de Umax et calcul de I et de P\n");
       //tempo une seconde, juste pour laisser demarrer avant de mesurer: 
         delay(1000);
-        //mesure sur une période (on est à 50hz donc 20ms "environ" car le secteur pas si stable), le temps d'acquisition analogique étant d'environ 0,1ms, on va faire le maximum de lectures pour choper au lus proche Umax:
+        //mesure sur une période (on est à 50hz donc 20ms "environ" car le secteur pas si stable), 
+        //le temps d'acquisition analogique étant d'environ 0,1ms, on va faire le maximum de lectures pour essayer de choper Umax:
         for(i=0; i < 500; i++) {
           U[i] = analogRead(A2);              
         }
@@ -113,8 +115,7 @@
         Ieff=Ueff/38.5*1000;
         P=Ieff*230;
       //affichage et contrôle des résultats sur le moniteur série:
-        Serial.println("Résultats :");
-        
+        Serial.println("Résultats :");        
         Serial.println("");
         Serial.print("Umax= ");
         Serial.println(Um);
@@ -153,4 +154,33 @@
       lcd.setCursor(0, 3);
       lcd.print(" fin du LCD");           
     }
+//définition de la fonction qui détermine s'il y a injection ou consommation sur le réseau EDF:
+  void Injection(){
+    int i;
+    Inj1[3];
+    Inj2[3];
+    int signe1=1;
+    int signe2=-1;
+    While (signe1*signe2<0){
+      for (i=0;i<3;i+=1){
+        Inj1[i]=analogRead(A1);
+        Inj1[i]=analogRead(A2);
+      }
+      signe1=(Inj1[2]-Inj1[1])*(Inj1[1]-Inj1[0]);
+      signe2=(Inj2[2]-Inj2[1])*(Inj2[1]-Inj2[0]);
+    }
+    if (signe1>0){
+      Serial.print("le courant sur A1 est croissant");
+    }
+    else {
+      Serial.print("le courant sur A1 est décroissant");
+    }
+    if (signe2>0){
+      Serial.print("le courant sur A2 est croissant");
+    }
+    else {
+      Serial.print("le courant sur A2 est décroissant");
+    }
+  }
+    
   

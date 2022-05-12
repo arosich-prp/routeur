@@ -1,7 +1,7 @@
 int PIN_ACS712 = A1;
 
 int amplitude(int pin){
-  const unsigned long duree_mesure = 20; // en ms
+  const unsigned long duree_mesure = 1000; // en ms
   int valmin = 1023;
   int valmax = 0;
   unsigned long chrono = millis();

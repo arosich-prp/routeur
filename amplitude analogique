@@ -1,0 +1,24 @@
+int PIN_ACS712 = A1;
+
+int amplitude(int pin){
+  const unsigned long duree_mesure = 20; // en ms
+  int valmin = 1023;
+  int valmax = 0;
+  unsigned long chrono = millis();
+  while (millis() - chrono < duree_mesure) {
+    int val = analogRead( pin );
+    if (val < valmin) valmin = val;
+    if (val > valmax) valmax = val;
+  }
+  return valmax - valmin;
+}
+
+void setup(){
+  Serial.begin(9600);
+}
+
+void loop(){
+  Serial.print("Amplitude=");
+  Serial.println(amplitude(PIN_ACS712));
+  delay(1000);
+}

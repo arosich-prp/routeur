@@ -8,13 +8,7 @@ int Puissance(){
     if (val < valmin) valmin = val;
     if (val > valmax) valmax = val;
   }
+  //calcul du coefficiant à partir d'un étalonnage sur excel (ici, R=40 ohms et le tor à un rapport de 1000):
   return ((valmax - valmin)/2-511)*20;
 }
 
-void setup(){
-  Serial.begin(9600);
-}
-
-void loop(){
-  int P=Puissance();
-}

@@ -1,8 +1,6 @@
 //--------PROGRAMME POUR envoyer le surplus de production PV au chauffe eau ou autre---------------------------------------
 
-//Librairies:
-  // librairie pour mesurer l'intensité avec un tor:
-    #include <EmonLib.h> 
+//Librairies: 
   //Variateur est le nom pour le module AC dimmer qui est le variateur de puissance:
       //on peut télécharger la librairie zippée sur https://github.com/RobotDynOfficial/RBDDimmer:
         #include <RBDdimmer.h>
@@ -10,17 +8,12 @@
     #include <Wire.h>
   //pour utiliser le LCD:
     #include <LiquidCrystal_I2C.h>
+
 //variables:
   //variables du variateur:
     //Paramètres:
       const int ZeroCrossPin  = 2;
       const int PortVariateur  = 3;
-    //bornes de pourcentage de puissance et pas d'incrémentation:
-      int Pmin = 0;
-      int Pmax  = 100;
-      int Ppas  = 2;
-    //autre variable:
-      int Puissance  = 0;
 
 //Objets ou instances:
   //attribution du port de commande (3) au variateur:
@@ -32,118 +25,39 @@
 
 //Initialisations:
   void setup(){
-    //Création du port série pour que l'arduino puisse envoyer les infos vers le pc:
-      Serial.begin(9600);
-    //petit message pour visuliser le démmarage:
-      Serial.println(F("Initialisation du système"));               
-    // calibrage du courant sur le pin 1 (coéfficient 111.1 à changer):
-      Injection.current(1, 111.1);  
     // initialisation de l'afficheur:
       lcd.init();
     //initialisation du variateur de puissance:
       Variateur.begin(NORMAL_MODE, ON);
     //lecture sur le pin A2 de la tension aux bornes de la résistance sur le tor (pince ampère métrique):
+      pinMode(A1,INPUT);
       pinMode(A2,INPUT);
   }
 
 //Boucle principale:
   void loop(){
-    //test des fonctions:
-      //test du variateur de puissance:
-        testVariateur();
-      // test du calcul d'intensité avec emonlib:
-        Iemon();
-      //test de d'acquisition et de calcul de Umax:
-        Umax();
-      //test de l'affichage sur lcd:
-        AffichageLcd();
+    lcd.backlight();
+    lcd.setCursor(0, 0);
+    lcd.print("Surplus PV injection EDF");
+    lcd.setCursor(0,1);
+    lcd.print("        ");
+    lcd.setCursor(0,1);
+    lcd.print(Puissance());
+    lcd.setCursor(0, 2);
+    lcd.print("Injection Cumulus");
+    lcd.setCursor(0, 3);
+    lcd.print(Variateur());
   }  
   
-//Définition de la fonction pour tester le variateur de puissance:
-  void testVariateur(){
-    //essai avec une lampe à incandescence branchée en sortie du module AC Dimmer:  
-      // augmentation de la puissance de 2% par seconde:
-        for(Puissance=Pmax;Puissance<=Pmin;Puissance+=Ppas){  
-          Variateur.setPower(Puissance); 
-          //sortie sur le moniteur série du PC: 
-            Serial.print("lampValue -> ");
-            Serial.print(Variateur.getPower());
-            Serial.println("%");
-          //1/2 seconde d'attente pour les affichages:
-            delay(500); //1/2 seconde d'attente
-        }
-    // diminution de la puissance de 2% par seconde:
-      for(Puissance=Pmax;Puissance>=Pmin;Puissance-=Ppas){
-          Variateur.setPower(Puissance); 
-          //sortie sur le moniteur série du PC:
-            Serial.print("lampValue -> ");
-            Serial.print(Variateur.getPower());
-            Serial.println("%");
-          //1/2 seconde d'attente pour les affichages:
-            delay(500); 
-        }
+//réglage du variateur et renvoie de la valeur:
+  int Puissance(){
+    if (
+    {
+      Variateur.setPower(  ); 
+      //sortie sur le moniteur série du PC:
+     
+      Variateur.getPower();
+       
+     
     }
-
-//Définition de la fonction pour lire la tension sur une période (20ms)
-    void Umax(){
-      //Les valeurs lues sur A2 sont stockées dans un tableau:
-    long Um;
-    float Ueff;
-    long U[20];
-      int i;
-      Serial.println("Test lancé\n");
-      //tempo une seconde, juste pour laisser demarrer avant de mesurer: 
-        delay(1000);
-        //mesure sur une période (on est à 50hz donc 20ms "environ" car le secteur pas si stable), le temps d'acquisition analogique étant d'environ 0,1ms, on va faire le maximum de lectures pour choper au lus proche Umax:
-        for(i=0; i < 200; i++) {
-          U[i] = analogRead(A2);                 
-        }
-      //recheche de Umax:
-        Um=U[0];
-        for(i=0; i < 200; i++) {
-          if (Um<U[i]){
-            Um=U[i];
-          }         
-        }
-      //calcul de Uefficace réel:
-        Ueff=(Um*(5/1023)-2,5)/square(2);
-      //affichage et contrôle des résultats sur le moniteur série:
-        Serial.println("Résultats :");
-        for(i=0; i < 200; i++) {
-          Serial.print("/ Valeur ");
-          Serial.print(i+1);
-          Serial.print(" lue : ");
-          Serial.print(U[i]);
-        }
-        Serial.println("");
-        Serial.print("Umax= ");
-        Serial.println(Um);
-        Serial.print("U= ");
-        Serial.println(Ueff);
-    }
-
-//Définition de la fonction etalonnage du calcul d'intensité:
-    void Iemon(){
-      //Calcul d'intensités:
-        float Iinjection=Injection.Irms;
-        double Ieff = Injection.calcIrms(1480);
-      // affichage du test sur le PC pour bien étalonner les calculs d'intensités:
-        Serial.print(Iinjection); // intensité 
-        Serial.println(" Ampères");
-        Serial.print(Ieff); // intensité moyenne
-        Serial.println(" Ampères");
-     }
-
-// définition de la fonction d'affichage sur le LCD (test):
-  void AffichageLcd(){
-      lcd.backlight();
-      lcd.setCursor(0, 0);
-      lcd.print(" essai pour Lcd");
-      lcd.setCursor(0,1);
-      lcd.print(" deuxième ligne");
-      lcd.setCursor(0, 2);
-      lcd.print(" 3eme ligne");
-      lcd.setCursor(0, 3);
-      lcd.print(" fin du LCD");           
-    }
-  
+  }

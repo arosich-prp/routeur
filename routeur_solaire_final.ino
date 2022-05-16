@@ -78,14 +78,14 @@ void InjectionReseau(){
         }                      
      }
       //calcul des Puissances:
-        float P1=((U1max-511)*5/1023)*230*1800;
-        float P2=((U2max-511)*5/1023)*230*1000;
+        float P1=((U1max-524)*5.065)/1023;
+        float P2=((U2max-511)*5.065)/1023;
         signe=P1*P2;
       //valeur retournée par la fonction:
         lcd.setCursor(0,1);
         lcd.print("           ");
         lcd.setCursor(0,1);
-        lcd.print(P1);
+        lcd.print(P1*3055.5);
         lcd.setCursor(8,1);
         lcd.print("Watts");
   }

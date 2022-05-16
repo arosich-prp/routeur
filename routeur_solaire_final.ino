@@ -1,6 +1,6 @@
 
 
-//--------PROGRAMME POUR envoyer le surplus de production PV au chauffe eau ou autre---------------------------------------
+//--------envoyer le surplus de production PV au chauffe eau ou autre---------------------------------------
 
 //Librairies:
   //Variateur est le nom pour le module AC dimmer qui est le variateur de puissance:
@@ -21,6 +21,7 @@ int niveau=0;
     dimmerLamp Variateur(3);
   //Attribution de l'adresse matérielle et definition du lcd 20x4:
     LiquidCrystal_I2C lcd(0x27,20,4);
+    
 //Initialisations:
   void setup(){
     // initialisation de l'afficheur:
@@ -28,7 +29,7 @@ int niveau=0;
       lcd.backlight();    
     //initialisation du variateur de puissance:
       Variateur.begin(NORMAL_MODE, ON);
-    //lecture sur les pin A1 et A2 de la tension sortie des tors (pince ampèremétrique):
+    //initialisation des pins A1 et A2 qui mesurent la tension de sortie des tors (pince ampèremétrique):
       pinMode(A1,INPUT);
       pinMode(A2,INPUT);
   }
@@ -46,9 +47,9 @@ int niveau=0;
 //Définition de la fonction pour régler le variateur de puissance:
   void InjectionCumulus(){
     //réglage du variateur et renvoie de la valeur:
-    if (signe<0){niveau+=2;}
-    else if(signe>0){niveau-=2;}
-    if (niveau<0){niveau=0;}
+    if (signe<0){niveau+=1;}
+    else if(signe>0){niveau-=1;}
+    if (niveau<8){niveau=8;}
     else if (niveau>100){niveau=100;}
     Variateur.setPower(niveau);
     int Pcumulus=Variateur.getPower();
@@ -62,29 +63,29 @@ int niveau=0;
 
 //Définition de la fonction pour lire la puissance:
 void InjectionReseau(){
-    float U1;
-    float U2;
-    float Umax=0;
-    float U2max;
+    int U1=0;
+    int U2=0;
+    int U1max=0;
+    int U2max=0;
     int k;
-    //mesure sur un grand nombre de valeurs en 2secondes (au moins 100 periodes): 
-    for(k=0; k < 10000; k++) {
+    //mesure sur un grand nombre de valeurs en 1 secondes (au moins 10 periodes donc environ 1000 lectures): 
+    for(k=0; k < 5000; k++) {
       U1 = analogRead(A1);
-      U2= analogRead(A2);
-      if (U1>Umax){
-        Umax=U1;
+      U2 = analogRead(A2);
+      if (U1>U1max){
+        U1max=U1;
         U2max=U2;          
         }                      
      }
-      //calcul de Puissance:
-        float Um=(Umax-511)*16;
-        float U2m=(U2max-511)*15;
-        signe=Um*U2m;
+      //calcul des Puissances:
+        float P1=((U1max-511)*5/1023)*230*1800;
+        float P2=((U2max-511)*5/1023)*230*1000;
+        signe=P1*P2;
       //valeur retournée par la fonction:
         lcd.setCursor(0,1);
         lcd.print("           ");
         lcd.setCursor(0,1);
-        lcd.print(Um);
+        lcd.print(P1);
         lcd.setCursor(8,1);
         lcd.print("Watts");
   }

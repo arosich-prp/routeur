@@ -12,14 +12,12 @@
     #include <LiquidCrystal_I2C.h>
     
 //variables:
-const int ZeroCrossPin  = 2;
-float signe=1;
-int niveau=0;
-int U1=0;
-int U2=0;
-int U1max=0;
-int U2max=0;
-       
+  const int ZeroCrossPin  = 2;
+  float signe=1;
+  int niveau=0;
+  int U1=0;
+  int U2=0;
+         
 //Objets ou instances:
   //attribution du port de commande (3) au variateur:
     dimmerLamp Variateur(3);
@@ -51,38 +49,38 @@ int U2max=0;
 //Définition de la fonction pour régler le variateur de puissance:
   void InjectionCumulus(){
     //récupération du niveau antérieur:
-    int niveau0=niveau;
+      int niveau0=niveau;
     //réglage du variateur et renvoie de la valeur:
-    if (signe<0){niveau+=1;}
-    else if(signe>0){niveau-=1;}
-    if (niveau<8){niveau=8;}
-    else if (niveau>100){niveau=100;}
-    if (niveau!=niveau0){    
-    Variateur.setPower(niveau);
+      if (signe<0){niveau+=1;}
+      else if(signe>0){niveau-=1;}
+      if (niveau<8){niveau=8;}
+      else if (niveau>100){niveau=100;}
+      if (niveau!=niveau0){    
+      Variateur.setPower(niveau);
+      }
+      lcd.setCursor(0,3);
+      lcd.print("   ");
+      lcd.setCursor(0,3);
+      lcd.print(niveau);
+      lcd.setCursor(4,3);
+      lcd.print("%");
     }
-    lcd.setCursor(0,3);
-    lcd.print("   ");
-    lcd.setCursor(0,3);
-    lcd.print(niveau);
-    lcd.setCursor(4,3);
-    lcd.print("%");
-  }
 
 //Définition de la fonction pour lire la puissance:
-void InjectionReseau(){    
+  void InjectionReseau(){    
     int k;
-    //mesure sur un grand nombre de valeurs en 1 secondes (au moins 10 periodes donc environ 1000 lectures): 
-    for(k=0; k < 5000; k+=1) {
-      U1 = analogRead(A1);
-      U2 = analogRead(A2);
-      if (U1>U1max){
+    int U1max=0;
+    //mesure sur un grand nombre de valeurs en 1 secondes (sur au moins 10 periodes donc 500 lectures par périodes sur chaque tor): 
+      for(k=0; k < 5000; k+=1) {
+        U1 = analogRead(A1);
+        if (U1max<U1){
         U1max=U1;
-        U2max=U2;          
-        }                      
-     }
+        U2 = analogRead(A2);
+        }          }                      
+      }
       //calcul des Puissances:
         float P1=((U1max-524)*5.065)/1023;
-        float P2=((U2max-524)*5.065)/1023;
+        float P2=((U2-524)*5.065)/1023;
         signe=P1*P2;
       //valeur retournée par la fonction:
         lcd.setCursor(0,1);

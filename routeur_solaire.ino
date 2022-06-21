@@ -31,15 +31,13 @@
       lcd.backlight();    
     //initialisation du variateur de puissance:
       Variateur.begin(NORMAL_MODE, ON);
-    //initialisation des pins A1 et A2 qui mesurent la tension de sortie des tors (pince ampèremétrique):
-      pinMode(A1,INPUT);
-      pinMode(A2,INPUT);
+    //pas d'initialisation des ports A1 et A2 avec analoread
   }
 
 //Boucle principale:
   void loop(){
    //affichage et lancement des fonctions de mesures et de réglage de puissance
-   while (boucle<300000){
+   while (boucle<1800){
     if (signe>0){
       lcd.setCursor(0,0);
       lcd.print("EDF(inj)     PV");}
@@ -48,16 +46,18 @@
       lcd.print("EDF(conso)   PV");}
     else {
       lcd.setCursor(0,0);
-      lcd.print("EDF          PV");}
+      lcd.print("EDF          PV");
+    }
     lcd.setCursor(0,2);
     lcd.print("Injection Cumulus");         
     InjectionReseau();      
     InjectionCumulus();
     boucle+=1;
+    delay(1000);
    }
    //reinitialisation du variateur de puissance
      Variateur.setState(OFF); 
-     delay (200);
+     delay (1000);
      Variateur.setState(ON);
      boucle=0;
   }  
@@ -83,16 +83,18 @@
     int k;
     int Uedf=0;
     int Upv=0;
-    //mesure de 10000 valeurs en 1 secondes (sur 50 periodes avec 100 lectures par périodes pour chaque tor): 
-      for(k=0; k < 5000; k+=1) {
+    //mesure entre 50 et 100 valeurs pour une période car environ 100µs de lecture par analogread et on a de 2 à 4 lectures: 
+      for(k=0; k < 100; k+=1) {
+        int poubelle=analogread(A1);
         int L1 = analogRead(A1);
-        int L2 = analogRead(A2);
-        if (L2>=Upv){
+      if (L1>=Uedf){
           Uedf=L1;
+        int poubelle=analogread(A2);
+        int L2 = analogread(A2);
           Upv=L2;
         }             
        }
-     //calcul de la tension mesurée par le tor (déphasage de 100µs de Upv):
+     //calcul de la tension mesurée par le tor (déphasage de 200µs de Upv):
         Pedf=Uedf-511;
         Ppv=Upv-511;
         signe=Pedf*Ppv;        

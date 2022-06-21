@@ -12,8 +12,9 @@
 //variables:
   int signe=0;
   int niveau=0;
-  int Pedf=0;
-  int Ppv=0;
+  int Uedf=0;
+  int Upv=0;
+  int Pcumulus=0;
   int boucle=0;
           
 //Objets ou instances:
@@ -38,13 +39,13 @@
    while (boucle<1800){
     if (signe>0){
       lcd.setCursor(0,0);
-      lcd.print("EDF(inj)     PV");}
+      lcd.print("sur  production solaire");}
     else if (signe<0){
       lcd.setCursor(0,0);
-      lcd.print("EDF(conso)   PV");}
+      lcd.print("sous production solaire");}
     else {
       lcd.setCursor(0,0);
-      lcd.print("EDF          PV");
+      lcd.print("Autoconsommation totale");
     }
     lcd.setCursor(0,2);
     lcd.print("Injection Cumulus");         
@@ -57,56 +58,39 @@
      Variateur.setState(OFF); 
      delay (1000);
      Variateur.setState(ON);
+     Variateur.setPower(niveau)
      boucle=0;
   }  
   
 //Définition de la fonction pour régler le variateur de puissance:
   void InjectionCumulus(){
-    //réglage du variateur et renvoie de la valeur:
-      if (Pedf!=0){
-        if ((signe>0)&(niveau<100)){niveau+=1;}
-        else if((signe<0)&(niveau>0)){niveau-=1;}
-        Variateur.setPower(niveau);
-      }
-        lcd.setCursor(0,3);
-        lcd.print("   ");
-        lcd.setCursor(0,3);
-        lcd.print(niveau);
-        lcd.setCursor(4,3);
-        lcd.print("%");
+    //réglage du variateur et renvoie de la valeur de puissance injectée:
+    int Ucumulus=0;  
+    if (Uedf!=0){
+      if ((signe>0)&(niveau<100)){niveau+=1;}
+      else if((signe<0)&(niveau>0)){niveau-=1;}
+      Variateur.setPower(niveau);
     }
+    //recherche du voltage max dans le capteur A3 du courant au cumulus
+    for(k=0; k < 1000; k+=1) {
+      int L3=analogRead(A3);
+      if (L3>=Ucumulus){Ucumulus=L3;}
+      Pcumulus=(Ucumulus-511)*25;
+      lcd.setCursor(0,3);
+      lcd.print("       ");
+      lcd.setCursor(0,3);
+      lcd.print(Pcumulus);
+      lcd.setCursor(8,3);
+      lcd.print("Watts");
+  }
     
 //Définition de la fonction des lectures et détermination de l'état d'injection ou de consammation
   void InjectionReseau(){    
-    int k;
-    int Uedf=0;
-    int Upv=0;
     //mesure entre 50 et 100 valeurs pour une période car environ 100µs de lecture par analogread et on a de 2 à 4 lectures: 
-      for(k=0; k < 100; k+=1) {
-        int poubelle=analogread(A1);
-        int L1 = analogRead(A1);
-      if (L1>=Uedf){
-          Uedf=L1;
-        int poubelle=analogread(A2);
-        int L2 = analogread(A2);
-          Upv=L2;
-        }             
-       }
-     //calcul de la tension mesurée par le tor (déphasage de 200µs de Upv):
-        Pedf=Uedf-511;
-        Ppv=Upv-511;
-        signe=Pedf*Ppv;        
-     //valeur retournée par la fonction:
-        lcd.setCursor(0,1);
-        lcd.print("        ");
-        lcd.setCursor(0,1);
-     //puissance d'injection ou de soutirage EDF
-        lcd.print(Pedf*16);
-        lcd.setCursor(6,1);
-        lcd.print("Watts");
-        lcd.setCursor(13,1);
-        lcd.print("        ");
-        lcd.setCursor(13,1);
-      //puissance Photovoltaïque
-        lcd.print(Ppv*16);     
+    int L1 = analogRead(A1);
+    int L2 = analogread(A2);
+    //calcul ddes tensions mesurées par les tors:
+    Uedf=L1-511;
+    Upv=L2-511;
+    signe=Uedf*Upv; 
   }

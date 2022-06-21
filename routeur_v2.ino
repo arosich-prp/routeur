@@ -2,8 +2,8 @@
 
 //Librairies:
   //Variateur est le nom pour le module AC dimmer qui est le variateur de puissance:
-      //on peut télécharger la librairie zippée sur https://github.com/RobotDynOfficial/RBDDimmer:
-        #include <RBDdimmer.h>
+    //on peut télécharger la librairie zippée sur https://github.com/RobotDynOfficial/RBDDimmer:
+      #include <RBDdimmer.h>
   //pour communique en mode I2C qui est le protocol utilisé par le support lcd:
     #include <Wire.h>   
   //pour utiliser le LCD:
@@ -15,7 +15,7 @@
   int Uedf=0;
   int Upv=0;
   int Pcumulus=0;
-  int boucle=0;
+  int temps=0;
           
 //Objets ou instances:
   //attribution du port de commande (3) au variateur:
@@ -35,8 +35,7 @@
 
 //Boucle principale:
   void loop(){
-   //affichage et lancement des fonctions de mesures et de réglage de puissance
-   while (boucle<1800){
+   //affichage et lancement des fonctions de mesures et de réglage de puissance:
     if (signe>0){
       lcd.setCursor(0,0);
       lcd.print("sur  production solaire");}
@@ -51,15 +50,16 @@
     lcd.print("Injection Cumulus");         
     InjectionReseau();      
     InjectionCumulus();
-    boucle+=1;
+    //reinitialisation du variateur de puissance au bout d'une demi-heure:
+    if (temps>=18000){
+      Variateur.setState(OFF);
+      delay (1000);
+      Variateur.setState(ON);
+      Variateur.setPower(niveau);
+      temps=0;
+    }
     delay(1000);
-   }
-   //reinitialisation du variateur de puissance
-     Variateur.setState(OFF); 
-     delay (1000);
-     Variateur.setState(ON);
-     Variateur.setPower(niveau)
-     boucle=0;
+    temps+=1;    
   }  
   
 //Définition de la fonction pour régler le variateur de puissance:
@@ -84,7 +84,7 @@
       lcd.print("Watts");
   }
     
-//Définition de la fonction des lectures et détermination de l'état d'injection ou de consammation
+//Définition de la fonction qui donne l'état "injection ou de consommation"
   void InjectionReseau(){    
     //mesure entre 50 et 100 valeurs pour une période car environ 100µs de lecture par analogread et on a de 2 à 4 lectures: 
     int L1 = analogRead(A1);

@@ -12,12 +12,12 @@
     #include <LiquidCrystal_I2C.h>
     
 //variables:
-  const int ZeroCrossPin  = 2;
-  float signe=1;
+  int signe=0;
   int niveau=0;
-  float U1=0;
-  float U2=0;
-         
+  int Pedf=0;
+  int Ppv=0;
+  int boucle=0;
+          
 //Objets ou instances:
   //attribution du port de commande (3) au variateur:
     dimmerLamp Variateur(3);
@@ -37,58 +37,78 @@
   }
 
 //Boucle principale:
-  void loop(){    
-   lcd.setCursor(0,0);
-   lcd.print("Surplus PV");
-   InjectionReseau();
-   lcd.setCursor(0,2);
-   lcd.print("consommation cumulus");
-   InjectionCumulus();   
+  void loop(){
+   //affichage et lancement des fonctions de mesures et de réglage de puissance
+   while (boucle<300000){
+    if (signe>0){
+      lcd.setCursor(0,0);
+      lcd.print("EDF(inj)     PV");}
+    else if (signe<0){
+      lcd.setCursor(0,0);
+      lcd.print("EDF(conso)   PV");}
+    else {
+      lcd.setCursor(0,0);
+      lcd.print("EDF          PV");}
+    lcd.setCursor(0,2);
+    lcd.print("Injection Cumulus");         
+    InjectionReseau();      
+    InjectionCumulus();
+    boucle+=1;
+   }
+   //reinitialisation du variateur de puissance
+     Variateur.setState(OFF); 
+     delay (200);
+     Variateur.setState(ON);
+     boucle=0;
   }  
   
 //Définition de la fonction pour régler le variateur de puissance:
   void InjectionCumulus(){
-    //récupération du niveau antérieur:
-      int niveau0=niveau;
     //réglage du variateur et renvoie de la valeur:
-      if (signe<0){niveau+=1;}
-      else if(signe>0){niveau-=1;}
-      if (niveau<8){niveau=8;}
-      else if (niveau>100){niveau=100;}
-      if (niveau!=niveau0){    
-      Variateur.setPower(niveau);
+      if (Pedf!=0){
+        if ((signe>0)&(niveau<100)){niveau+=1;}
+        else if((signe<0)&(niveau>0)){niveau-=1;}
+        Variateur.setPower(niveau);
       }
-      lcd.setCursor(0,3);
-      lcd.print("   ");
-      lcd.setCursor(0,3);
-      lcd.print(niveau);
-      lcd.setCursor(4,3);
-      lcd.print("%");
+        lcd.setCursor(0,3);
+        lcd.print("   ");
+        lcd.setCursor(0,3);
+        lcd.print(niveau);
+        lcd.setCursor(4,3);
+        lcd.print("%");
     }
-
-//Définition de la fonction pour lire la puissance:
+    
+//Définition de la fonction des lectures et détermination de l'état d'injection ou de consammation
   void InjectionReseau(){    
     int k;
-    float U1max=0;
-    //mesure sur un grand nombre de valeurs en 1 secondes (sur au moins 10 periodes donc 500 lectures par périodes sur chaque tor): 
+    int Uedf=0;
+    int Upv=0;
+    //mesure de 10000 valeurs en 1 secondes (sur 50 periodes avec 100 lectures par périodes pour chaque tor): 
       for(k=0; k < 5000; k+=1) {
-        U1 = analogRead(A1);
-        if (U1>U1max){
-        U1max=U1;
-        U2 = analogRead(A2);
-        }                     
-      }
-      //calcul des Puissances:
-        float P1=((U1max-512)*5)/1023;
-        float P2=((U2-512)*5)/1023;
-        signe=P1*P2;
-      //valeur retournée par la fonction:
+        int L1 = analogRead(A1);
+        int L2 = analogRead(A2);
+        if (L2>=Upv){
+          Uedf=L1;
+          Upv=L2;
+        }             
+       }
+     //calcul de la tension mesurée par le tor (déphasage de 100µs de Upv):
+        Pedf=Uedf-511;
+        Ppv=Upv-511;
+        signe=Pedf*Ppv;        
+     //valeur retournée par la fonction:
         lcd.setCursor(0,1);
-        lcd.print("           ");
+        lcd.print("        ");
         lcd.setCursor(0,1);
-        lcd.print(P1*3055.5);
-        lcd.setCursor(8,1);
+     //puissance d'injection ou de soutirage EDF
+        lcd.print(Pedf*16);
+        lcd.setCursor(6,1);
         lcd.print("Watts");
+        lcd.setCursor(13,1);
+        lcd.print("        ");
+        lcd.setCursor(13,1);
+      //puissance Photovoltaïque
+        lcd.print(Ppv*16);     
   }
 
                

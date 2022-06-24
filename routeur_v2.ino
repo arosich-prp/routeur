@@ -74,14 +74,14 @@
 //Définition de la fonction pour régler le variateur de puissance:
   void InjectionCumulus(){
     //réglage du variateur et renvoie de la valeur de puissance injectée:
-    While ((Upv>500)|(Upv<-500){
+    while ((Upv>500)|(Upv<-500)){
       if (Uedf!=0){
         if ((signe>0)&(niveau<100)){niveau+=1;}
         else if((signe<0)&(niveau>0)){niveau-=1;}
         Variateur.setPower(niveau);
       }
     }
-    if ((Upv<=500)&(Upv>=-500){
+    if ((Upv<=500)&(Upv>=-500)){
       niveau=0;
     }
   }

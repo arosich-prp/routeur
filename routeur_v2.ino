@@ -89,9 +89,7 @@
  //Définition de la fonction qui donne l'état "injection ou de consommation
   void InjectionReseau(){    
     int S1=0;
-    int S2=0;
-    int Uedf=0;
-    int Upv=0;
+    int S2=0; 
     // recupération de 5 valeurs max de Uedf et de Upv correspondante pour calcul de la valeur moyenne
       for (int k=0; k<5; k+=1){
            Uedf=0;

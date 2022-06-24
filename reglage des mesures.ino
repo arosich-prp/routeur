@@ -1,6 +1,5 @@
 //variables
-int Uedf=0;
-int Upv=0;
+int Uref=511;
 
 void setup() {    
      //moniteur série
@@ -9,9 +8,11 @@ void setup() {
 
  void loop() {
       int S1=0;
-      int S2=0;
+      int S2=0;      
       // recupération de 5 valeurs max de Uedf et de Upv correspondante pour calcul de la valeur moyenne
       for (int k=0; k<5; k+=1){
+           int Uedf=0;
+           int Upv=0;
            //lecture de 20 valeurs sur 40 périodes et recherche du max pour EDF et recupération de la valeur PV correspondante
            for (int i=1; i<20; i++){
                int U1= safeAnalogRead(1);
@@ -31,7 +32,10 @@ void setup() {
       Uedf=S1/5;
       Upv=S2/5;
       //affichage sur le port série
-      Serial.println(Uedf); 
+      Serial.print(Uedf);
+      Serial.print(",");
+      Serial.print(Uref);
+      Serial.print(",");
       Serial.println(Upv);
  }
 

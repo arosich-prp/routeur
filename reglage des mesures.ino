@@ -11,9 +11,9 @@ void setup() {
       int S1=0;
       int S2=0;
       // recupération de 5 valeurs max de Uedf et de Upv correspondante pour calcul de la valeur moyenne
-      for (int k=0, k<5, k+=1){
+      for (int k=0; k<5; k+=1){
            //lecture de 20 valeurs sur 40 périodes et recherche du max pour EDF et recupération de la valeur PV correspondante
-           for (int i=1, i<20, i++){
+           for (int i=1; i<20; i++){
                int U1= safeAnalogRead(1);
                int U2 = safeAnalogRead(2);
                if (U1>=Uedf) {
@@ -40,6 +40,6 @@ int safeAnalogRead(int pin) {
      int x = analogRead(pin);  //première lecture pour initialiser l'entrée de l'ADC
      delay(9.89);              //délai de stabilisation du port
      x = analogRead(pin);      //lecture sur le port de l'ADC, environ 110µs=0,11ms
-     delay(9.89)               // retour à 20ms
+     delay(9.89);               // retour à 20ms
      return x;
 }

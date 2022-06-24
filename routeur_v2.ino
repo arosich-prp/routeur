@@ -116,10 +116,11 @@
 
 //fonction de lecture plus sécurisée, elle prend environ 20 ms
  int safeAnalogRead(int pin) {
+     delay(9.89);   
      int x = analogRead(pin);  //première lecture pour initialiser l'entrée de l'ADC
      delay(9.89);              //délai de stabilisation du port
      x = analogRead(pin);      //lecture sur le port de l'ADC, environ 110µs=0,11ms
-     delay(9.89);               // retour à 20ms
+     // retour à 20ms
      return x;
 }
            

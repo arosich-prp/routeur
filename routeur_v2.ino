@@ -38,16 +38,18 @@
    //affichage et lancement des fonctions de mesures et de réglage de puissance:
     if (signe>0){
       lcd.setCursor(0,0);
-      lcd.print("sur  production solaire");}
+      lcd.print("injecte  :        W");
+    }
     else if (signe<0){
       lcd.setCursor(0,0);
-      lcd.print("sous production solaire");}
+      lcd.print("consomme :        W");
+    } 
     else {
       lcd.setCursor(0,0);
-      lcd.print("Autoconsommation totale");
+      lcd.print("Autoconsommation    ");
     }
     lcd.setCursor(0,2);
-    lcd.print("Injection Cumulus");         
+    lcd.print("Injection Cumulus:      W");         
     InjectionReseau();      
     InjectionCumulus();
     //reinitialisation du variateur de puissance au bout d'une demi-heure:
@@ -65,26 +67,19 @@
 //Définition de la fonction pour régler le variateur de puissance:
   void InjectionCumulus(){
     //réglage du variateur et renvoie de la valeur de puissance injectée:
-    int Ucumulus=0;  
-    if (Uedf!=0){
-      if ((signe>0)&(niveau<100)){niveau+=1;}
-      else if((signe<0)&(niveau>0)){niveau-=1;}
-      Variateur.setPower(niveau);
+    While ((Upv>500)|(Upv<-500){
+      if (Uedf!=0){
+        if ((signe>0)&(niveau<100)){niveau+=1;}
+        else if((signe<0)&(niveau>0)){niveau-=1;}
+        Variateur.setPower(niveau);
+      }
     }
-    //recherche du voltage max dans le capteur A3 du courant au cumulus
-    for(k=0; k < 1000; k+=1) {
-      int L3=analogRead(A3);
-      if (L3>=Ucumulus){Ucumulus=L3;}
-      Pcumulus=(Ucumulus-511)*25;
-      lcd.setCursor(0,3);
-      lcd.print("       ");
-      lcd.setCursor(0,3);
-      lcd.print(Pcumulus);
-      lcd.setCursor(8,3);
-      lcd.print("Watts");
+    if ((Upv<=500)&(Upv>=-500){
+      niveau=0;
+    }
   }
     
-//Définition de la fonction qui donne l'état "injection ou de consommation"
+//Définition de la fonction qui donne l'état "injection ou de consommation
   void InjectionReseau(){    
     //mesure entre 50 et 100 valeurs pour une période car environ 100µs de lecture par analogread et on a de 2 à 4 lectures: 
     int L1 = analogRead(A1);
@@ -94,3 +89,4 @@
     Upv=L2-511;
     signe=Uedf*Upv; 
   }
+           

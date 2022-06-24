@@ -39,19 +39,26 @@
     if (signe>0){
       lcd.setCursor(0,0);
       lcd.print("injecte  :        W");
+      lcd.setCursor(11,0);
+      lcd.print(Uedf);
     }
-    else if (signe<0){
+    else if ((signe<0)|(Upv=0)){
       lcd.setCursor(0,0);
       lcd.print("consomme :        W");
+      lcd.setCursor(11,0);
+      lcd.print(Uedf);
     } 
-    else {
+    else if (Uedf=0){
       lcd.setCursor(0,0);
       lcd.print("Autoconsommation    ");
     }
-    lcd.setCursor(0,2);
-    lcd.print("Injection Cumulus:      W");         
-    InjectionReseau();      
-    InjectionCumulus();
+    lcd.setCursor(0,2);    
+    lcd.print("Conso Cumulus:     W");
+    lcd.setCursor(14,2);
+    lcd.print(niveau*15);
+    InjectionReseau();
+    signe=Uedf*Upv;
+    InjectionCumulus();   
     //reinitialisation du variateur de puissance au bout d'une demi-heure:
     if (temps>=18000){
       Variateur.setState(OFF);
@@ -79,14 +86,42 @@
     }
   }
     
-//Définition de la fonction qui donne l'état "injection ou de consommation
+ //Définition de la fonction qui donne l'état "injection ou de consommation
   void InjectionReseau(){    
-    //mesure entre 50 et 100 valeurs pour une période car environ 100µs de lecture par analogread et on a de 2 à 4 lectures: 
-    int L1 = analogRead(A1);
-    int L2 = analogread(A2);
-    //calcul ddes tensions mesurées par les tors:
-    Uedf=L1-511;
-    Upv=L2-511;
-    signe=Uedf*Upv; 
-  }
+    int S1=0;
+    int S2=0;
+    int Uedf=0;
+    int Upv=0;
+    // recupération de 5 valeurs max de Uedf et de Upv correspondante pour calcul de la valeur moyenne
+      for (int k=0; k<5; k+=1){
+           Uedf=0;
+           Upv=0;
+           //lecture de 20 valeurs sur 40 périodes et recherche du max pour EDF et recupération de la valeur PV correspondante
+             for (int i=1; i<20; i++){
+               int U1 = safeAnalogRead(1);
+               int U2 = safeAnalogRead(2);
+               if (U1>=Uedf) {
+                    Uedf=U1;
+                    Upv=U2;
+               }
+                //déphasage de 1ms pou changer de position sur la sinusoïde
+                delay(1);
+           }
+           // somme des valeurs de tension successives
+           S1+=Uedf;
+           S2+=Upv;
+      }
+      //calcul des valeurs moyennes
+      Uedf=S1/5-511;
+      Upv=S2/5-511;      
+ }
+
+//fonction de lecture plus sécurisée, elle prend environ 20 ms
+ int safeAnalogRead(int pin) {
+     int x = analogRead(pin);  //première lecture pour initialiser l'entrée de l'ADC
+     delay(9.89);              //délai de stabilisation du port
+     x = analogRead(pin);      //lecture sur le port de l'ADC, environ 110µs=0,11ms
+     delay(9.89);               // retour à 20ms
+     return x;
+}
            
